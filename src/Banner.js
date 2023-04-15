@@ -1,60 +1,56 @@
-import React, { useRef } from "react";
-import { auth } from "./firebase";
-import "./SignupScreen.css";
+import React, { useEffect, useState } from "react";
+import "./Banner.css";
+import axios from "./axios";
+import requests from "./Requests";
 
-function SignupScreen() {
-  const emailRef = useRef(null);
-  const passwordRef = useRef(null);
+function Banner() {
+  const [movie, setMovie] = useState([]);
 
-  const register = (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    async function fetchData() {
+      const request = await axios.get(requests.fetchTrending);
+      setMovie(
+        request.data.results[
+          Math.floor(Math.random() * request.data.results.length - 1)
+        ]
+      );
+      return request;
+    }
 
-    auth
-      .createUserWithEmailAndPassword(
-        emailRef.current.value,
-        passwordRef.current.value
-      )
-      .then((authUser) => {
-        console.log(authUser);
-      })
-      .catch((error) => {
-        alert(error.message);
-      });
-  };
+    fetchData();
+  }, []);
 
-  const signIn = (e) => {
-    e.preventDefault();
+  console.log(movie);
 
-    auth
-      .signInWithEmailAndPassword(
-        emailRef.current.value,
-        passwordRef.current.value
-      )
-      .then((authUser) => {
-        console.log(authUser);
-      })
-      .catch((error) => alert(error.message));
-  };
+  function truncate(string, n) {
+    return string?.length > n ? string.substr(0, n - 1) + "..." : string;
+  }
 
   return (
-    <div className="signupScreen">
-      <form>
-        <h1>Sign In</h1>
-        <input ref={emailRef} placeholder="Email" type="email" />
-        <input ref={passwordRef} placeholder="Password" type="password" />
-        <button type="submit" onClick={signIn}>
-          Sign In
-        </button>
+    <header
+      className="banner"
+      style={{
+        backgroundSize: "cover",
+        backgroundImage: `url("https://image.tmdb.org/t/p/original/${movie?.backdrop_path}")`,
+        backgroundPosition: "center center",
+      }}
+    >
+      <div className="banner__contents">
+        <h1 className="banner__title">
+          {movie?.title || movie?.name || movie?.original_name}
+        </h1>
+        <div className="banner__buttons">
+          <button className="banner__button">Play</button>
+          <button className="banner__button">My List</button>
+        </div>
+        <h1 className="banner__description">
+          {truncate(movie?.overview, 150)}
+        </h1>
+      </div>
 
-        <h4>
-          <span className="signupScreen__gray">New to Netflix? </span>
-          <span className="signupScreen__link" onClick={register}>
-            Sign Up now.
-          </span>
-        </h4>
-      </form>
-    </div>
+      <div className="banner--fadeBottom" />
+    </header>
   );
 }
 
-export default SignupScreen;
+export default Banner;
