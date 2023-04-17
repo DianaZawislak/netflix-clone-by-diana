@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import "./Nav.css";
+import { Link, useNavigate } from "react-router-dom";
 
 function Nav() {
   const [show, handleShow] = useState(false);
-  const history = useNavigate();
+  const navigate = useNavigate();
 
   const transitionNavBar = () => {
     if (window.scrollY > 100) {
@@ -18,21 +18,20 @@ function Nav() {
     window.addEventListener("scroll", transitionNavBar);
     return () => window.removeEventListener("scroll", transitionNavBar);
   }, []);
-
   return (
     <div className={`nav ${show && "nav__black"}`}>
       <div className="nav__contents">
         <img
-          onClick={() => history.push("/")}
+          onClick={() => navigate("/")}
           className="nav__logo"
-          src="http://assets.stickpng.com/images/580b57fcd9996e24bc43c529.png"
+          src="https://assets.stickpng.com/images/580b57fcd9996e24bc43c529.png"
           alt=""
         />
 
         <img
-          onClick={() => history.push("/profile")}
+          onClick={() => navigate("/profile")}
           className="nav__avatar"
-          src="https://pbs.twimg.com/profile_images/1240119990411550720/hBEe3tdn_400x400.png"
+          src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png"
           alt=""
         />
       </div>

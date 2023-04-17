@@ -1,6 +1,5 @@
-require('dotenv').config({ path: '.env.local' });
 
-const API_KEY = process.env.API_KEY;
+const API_KEY = "d6df9f45662cc97a4aaeea6cb8405a57";
 
 const requests = {
   fetchTrending: `/trending/all/week?api_key=${API_KEY}&language=en-US`,
