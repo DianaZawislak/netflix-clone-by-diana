@@ -16,7 +16,7 @@
 
 This project was built purely for educational purposes.
 
-## Visit [LIVE PREVIEW HERE]([www.example.com](https://netflix-clone-by-diana.firebaseapp.com/))
+## Visit [LIVE PREVIEW HERE](https://netflix-clone-by-diana.firebaseapp.com/)
 To test functionality please use sign in scree to enter dummy email and password followed by clicking on Sign Up Now.
 
 Choose your plan, this will redirect you to checkout screen where you can use test card number provided below
