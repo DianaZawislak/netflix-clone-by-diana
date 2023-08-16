@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectUser } from "../features/userSlice";
-import db from "../firebase";
+import { db } from "../firebase"; // Adjust the path as needed
 import "./PlansScreen.css";
 import { loadStripe } from "@stripe/stripe-js";
+import { collection, doc, getDocs, addDoc, onSnapshot } from "firebase/firestore";
 
 function PlansScreen() {
   const [products, setProducts] = useState([]);
@@ -11,71 +12,57 @@ function PlansScreen() {
   const [subscription, setSubscription] = useState(null);
 
   useEffect(() => {
-    db.collection("customers")
-      .doc(user.uid)
-      .collection("subscriptions")
-      .get()
-      .then((querySnapshot) => {
-        querySnapshot.forEach(async (subscription) => {
-          setSubscription({
-            role: subscription.data().role,
-            current_period_end: subscription.data().current_period_end.seconds,
-            current_period_start: subscription.data().current_period_start
-              .seconds,
-          });
+    const subsRef = collection(db, "customers", user.uid, "subscriptions");
+    getDocs(subsRef).then((querySnapshot) => {
+      querySnapshot.forEach((subscription) => {
+        setSubscription({
+          role: subscription.data().role,
+          current_period_end: subscription.data().current_period_end.seconds,
+          current_period_start: subscription.data().current_period_start.seconds,
         });
       });
+    });
   }, [user.uid]);
 
   useEffect(() => {
-    db.collection("products")
-      .where("active", "==", true)
-      .get()
-      .then((querySnapshot) => {
-        const products = {};
-        querySnapshot.forEach(async (productDoc) => {
-          products[productDoc.id] = productDoc.data();
-          const priceSnap = await productDoc.ref.collection("prices").get();
-          priceSnap.docs.forEach((price) => {
-            products[productDoc.id].prices = {
-              priceId: price.id,
-              priceData: price.data(),
-            };
-          });
+    const productsRef = collection(db, "products");
+    getDocs(productsRef).then((querySnapshot) => {
+      const products = {};
+      querySnapshot.forEach(async (productDoc) => {
+        products[productDoc.id] = productDoc.data();
+        const priceSnap = await getDocs(collection(productDoc.ref, "prices"));
+        priceSnap.docs.forEach((price) => {
+          products[productDoc.id].prices = {
+            priceId: price.id,
+            priceData: price.data(),
+          };
         });
-        setProducts(products);
       });
+      setProducts(products);
+    });
   }, []);
 
   console.log(products);
   console.log(subscription);
 
   const loadCheckout = async (priceId) => {
-    const docRef = await db
-      .collection("customers")
-      .doc(user.uid)
-      .collection("checkout_sessions")
-      .add({
-        price: priceId,
-        success_url: window.location.origin,
-        cancel_url: window.location.origin,
-      });
+    const checkoutSessionsRef = collection(db, "customers", user.uid, "checkout_sessions");
+    const docRef = await addDoc(checkoutSessionsRef, {
+      price: priceId,
+      success_url: window.location.origin,
+      cancel_url: window.location.origin,
+    });
 
-    docRef.onSnapshot(async (snap) => {
+    onSnapshot(docRef, async (snap) => {
       const { error, sessionId } = snap.data();
 
       if (error) {
-        // Show an error to your customer and
-        // inspect your Cloud Function logs in the Firebase console.
         alert(`An error occured: ${error.message}`);
       }
 
       if (sessionId) {
-        // We have a session, let's redirect to Checkout
-        // Init Stripe
-
         const stripe = await loadStripe(
-          "pk_test_51IHY5bGxTMskvQrGCC0gRGHoiphdjCAqSM92Nt453P9E4jevxDyczNtZ3eLHo2JQs5UecOzyche1jXaBArRMrIzT00FL6I5P1G"
+          "pk_test_51NfAqiEpgq77O9JrQpncGE7mnyxmBQMTPXD7z9579RxWkpb0LziLUmc9mmfYVp24lf3OJmI85KPvTRVYhHcpfIjF00n2rzqOIH"
         );
         stripe.redirectToCheckout({ sessionId });
       }
@@ -94,7 +81,6 @@ function PlansScreen() {
         </p>
       )}
       {Object.entries(products).map(([productId, productData]) => {
-        // TODO: add some logic to check if the user's subscription is active...
         const isCurrentPackage = productData.name
           ?.toLowerCase()
           .includes(subscription?.role);
@@ -107,7 +93,7 @@ function PlansScreen() {
             } plansScreen__plan`}
           >
             <div className="plansScreen__info">
-              <h5>{productData.name}</h5>
+              <h4>{productData.name}</h4>
               <h6>{productData.description}</h6>
             </div>
 
@@ -116,7 +102,7 @@ function PlansScreen() {
                 !isCurrentPackage && loadCheckout(productData.prices.priceId)
               }
             >
-              {isCurrentPackage ? "Current Package" : "Subscribe"}
+              {isCurrentPackage ? "Current Plan" : "Subscribe"}
             </button>
           </div>
         );
