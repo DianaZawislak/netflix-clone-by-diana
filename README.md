@@ -24,7 +24,7 @@ Choose your plan, this will redirect you to checkout screen where you can use te
 &#x1F447;&#x1F447;&#x1F447;&#x1F447;&#x1F447;&#x1F447;
 
 card number: 4242 4242 4242 4242 <br>
-exp date: 04/42<br>
+exp date: 04/24<br>
 security: 424
 
 Any text will work for name, adress etc...
